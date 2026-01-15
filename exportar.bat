@@ -1,7 +1,7 @@
 @echo off
 echo Exportando base de datos...
 :: Extrae la base de datos al archivo backup.sql
-docker exec db /usr/bin/mysqldump -u usuario --password=oretania wordpress > backup.sql
+docker exec db /usr/bin/mysqldump --no-tablespaces -u usuario --password=oretania wordpress > backup.sql
 
 echo Subiendo cambios a GitHub...
 git add .

@@ -5,7 +5,7 @@ echo "--- Iniciando Exportación ---"
 sudo chown -R $USER:$USER ./mi-contenido
 
 echo "[1/2] Generando backup.sql..."
-docker exec db /usr/bin/mysqldump -u usuario --password=oretania wordpress > backup.sql
+docker exec db /usr/bin/mysqldump --no-tablespaces -u usuario --password=oretania wordpress > backup.sql
 
 echo "[2/2] Subiendo a GitHub..."
 git add .
