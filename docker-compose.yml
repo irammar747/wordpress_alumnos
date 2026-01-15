@@ -1,0 +1,58 @@
+services:
+  db:
+    container_name: db
+    image: mysql:8.0
+    # MySQL 8 necesita este comando para ser compatible con apps antiguas
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin          # Contraseña para el usuario root
+      MYSQL_DATABASE: wordpress           # Nombre de la base de datos
+      MYSQL_USER: usuario                 # <--- Usuario específico para wordpress
+      MYSQL_PASSWORD: oretania            # <--- Contraseña del usuario 'usuario'
+
+    restart: always
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    volumes:
+      # 1. El núcleo de WordPress (Oculto y gestionado por Docker)
+      - wp_core_data:/var/www/html
+      
+      # 2. La carpeta de trabajo (Sincronizada por Git)
+      - ./mi-contenido:/var/www/html/wp-content
+      
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: usuario
+      WORDPRESS_DB_PASSWORD: oretania
+      WORDPRESS_DB_NAME: wordpress
+
+      # Añadimos esto para permitir archivos grandes de backup
+    command: >
+      sh -c "echo 'upload_max_filesize = 512M' > /usr/local/etc/php/conf.d/uploads.ini 
+      && echo 'post_max_size = 512M' >> /usr/local/etc/php/conf.d/uploads.ini 
+      && echo 'memory_limit = 512M' >> /usr/local/etc/php/conf.d/uploads.ini
+      && docker-entrypoint.sh apache2-foreground"
+
+    restart: always
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin:latest
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: admin # phpMyAdmin puede seguir entrando como root para gestionar todo
+    restart: always
+
+volumes:
+  wp_core_data:
+  db_data:
